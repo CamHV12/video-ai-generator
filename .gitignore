@@ -1,0 +1,25 @@
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Java / Maven
+backend/target/
+
+# Local data (never commit generated or uploaded media)
+data/input/
+data/output/
+data/temp/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+backend/.env
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
