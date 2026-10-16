@@ -17,6 +17,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Service
 public class LocalFileStorageService {
+    private static final long MIN_RUNWAY_UPLOAD_BYTES = 512L;
     private static final long MAX_IMAGE_BYTES = 200L * 1024 * 1024;
     private static final long MAX_VIDEO_BYTES = 200L * 1024 * 1024;
     private static final Set<String> IMAGE_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
@@ -45,6 +46,10 @@ public class LocalFileStorageService {
     private void validate(MultipartFile file, Set<String> allowedTypes, long maxBytes, String message) {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "Vui lòng chọn đầy đủ ảnh nguồn và video tham chiếu.");
+        }
+        if (file.getSize() < MIN_RUNWAY_UPLOAD_BYTES) {
+            throw new ResponseStatusException(BAD_REQUEST,
+                    "File phải có dung lượng tối thiểu 512 byte để tải lên Runway.");
         }
         if (file.getSize() > maxBytes) {
             throw new ResponseStatusException(BAD_REQUEST, "Mỗi file phải có dung lượng không vượt quá 200 MB.");

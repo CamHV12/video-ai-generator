@@ -1,6 +1,8 @@
 package com.camhv.aivideogenerator.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
@@ -19,6 +21,7 @@ import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
 @Component
 public class RunwayClient {
+    private static final Logger log = LoggerFactory.getLogger(RunwayClient.class);
     private static final String BASE_URL = "https://api.dev.runwayml.com";
     private final String apiKey;
     private final RestClient api;
@@ -67,9 +70,25 @@ public class RunwayClient {
         } catch (ResponseStatusException exception) {
             throw exception;
         } catch (Exception exception) {
+            log.error("Runway ephemeral upload failed for file '{}': {}",
+                    path.getFileName(), safeFailureSummary(exception));
             throw new ResponseStatusException(BAD_GATEWAY,
-                    "Không thể tải file lên Runway. Hãy kiểm tra API key, kết nối mạng và định dạng file.", exception);
+                    "Không thể tải file lên Runway. Hãy kiểm tra log backend để xem nguyên nhân chi tiết.", exception);
         }
+    }
+
+    private static String safeFailureSummary(Throwable exception) {
+        Throwable root = exception;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        String message = root.getMessage() == null ? "(không có thông điệp)" : root.getMessage();
+        // Do not write signed upload URLs or credentials to logs.
+        message = message.replaceAll("https?://\\S+", "[URL]");
+        message = message.replaceAll("(?i)Bearer\\s+\\S+", "Bearer [REDACTED]");
+        message = message.replaceAll("key_[0-9a-fA-F]{128}", "[REDACTED_API_KEY]");
+        if (message.length() > 500) message = message.substring(0, 500) + "...";
+        return root.getClass().getSimpleName() + ": " + message;
     }
 
     public String createVideoTask(String imageUri, String videoUri, int duration, String ratio, String prompt) {
