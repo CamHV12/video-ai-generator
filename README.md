@@ -18,6 +18,7 @@ This repository starts with a Phase 0 baseline. AI generation is intentionally n
 
 - Node.js LTS and npm
 - JDK 21
+- Apache Maven 3.9+
 - Git
 - Internet access for dependency downloads and, later, the AI provider API
 
@@ -27,7 +28,7 @@ This repository starts with a Phase 0 baseline. AI generation is intentionally n
 
 ```powershell
 cd backend
-.mvnw.cmd spring-boot:run
+mvn spring-boot:run
 ```
 
 The backend health endpoint is `http://localhost:8080/api/health`.
