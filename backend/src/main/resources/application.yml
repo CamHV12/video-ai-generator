@@ -1,0 +1,23 @@
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: ai-video-generator
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 220MB
+
+app:
+  storage:
+    root: ${APP_STORAGE_ROOT:../data}
+
+management:
+  endpoints:
+    enabled-by-default: false
+
+# AI provider configuration will be added only after endpoint capabilities are verified.
