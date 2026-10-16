@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 
+// Fixed prompt used for every generation request. The user does not need to write a prompt.
+export const DEFAULT_GENERATION_PROMPT = "Use the uploaded source image as the identity and scene reference, and use the uploaded reference video only as the motion/action reference. Generate a video in which the subject from the source image performs the same actions and movement pattern as the subject in the reference video, matching timing, gestures, body movement, and overall motion as closely as the model allows.\n\nPRESERVE THE SOURCE IMAGE AS STRICTLY AS POSSIBLE: keep the original composition, camera angle, framing, aspect ratio, camera-to-subject distance, camera position, pose and body placement wherever compatible with the requested motion, facial expression unless motion requires a change, hand and foot positions except where required to reproduce the reference action, background, props, environment, lighting, shadow direction, brightness, contrast, color temperature, and overall color grading. Do not change the lens or perspective. Preserve realistic skin texture, body proportions, and all environmental details. Do not add, remove, or rearrange objects. Avoid camera movement, zoom, reframing, cropping, scene transitions, flicker, warping, identity drift, extra fingers or limbs, and unintended changes to the background.\n\nUse the person/subject identity, appearance, and clothing shown in the source image as the character reference; if additional character or outfit reference images are provided, follow those for identity and clothing while keeping the source scene intact. Change only what is necessary to animate the subject and match the referenced action. Keep every other visual element unchanged. Produce a coherent, natural-looking video with consistent identity across frames."
+
 type LocalPreview = {
   file: File
   url: string
@@ -76,12 +79,7 @@ function FileDropCard({
             <span className="muted">Nhấn để duyệt file</span>
           </span>
         )}
-        <input
-          aria-label={title}
-          type="file"
-          accept={accept}
-          onChange={handleChange}
-        />
+        <input aria-label={title} type="file" accept={accept} onChange={handleChange} />
       </label>
 
       {file ? (
@@ -90,12 +88,10 @@ function FileDropCard({
             <strong title={file.name}>{file.name}</strong>
             <span className="muted">{formatBytes(file.size)}</span>
           </div>
-          <button className="text-button" type="button" onClick={() => onFileChange(null)}>
-            Xóa file
-          </button>
+          <button className="text-button" type="button" onClick={() => onFileChange(null)}>Xóa file</button>
         </div>
       ) : (
-        <p className="hint">{kind === 'image' ? 'Định dạng ảnh sẽ được xác thực ở bước upload.' : 'Định dạng và thời lượng được hỗ trợ phụ thuộc model AI.'}</p>
+        <p className="hint">{kind === 'image' ? 'Ảnh dùng làm tham chiếu ngoại hình và bối cảnh.' : 'Video dùng làm tham chiếu hành động và chuyển động.'}</p>
       )}
     </section>
   )
@@ -104,7 +100,6 @@ function FileDropCard({
 export default function App() {
   const [image, setImage] = useState<File | null>(null)
   const [referenceVideo, setReferenceVideo] = useState<File | null>(null)
-  const [prompt, setPrompt] = useState('')
   const [duration, setDuration] = useState('5')
   const [aspectRatio, setAspectRatio] = useState('9:16')
 
@@ -122,7 +117,7 @@ export default function App() {
         <p className="eyebrow">IMAGE TO VIDEO WORKSPACE</p>
         <h1>Biến ý tưởng thành <span>chuyển động.</span></h1>
         <p className="intro__description">
-          Tải ảnh nguồn và video chuyển động tham chiếu. Chuẩn bị nội dung của bạn trong một không gian sáng tạo duy nhất.
+          Chỉ cần tải ảnh và video mẫu. Hệ thống tự áp dụng hướng dẫn tạo video đã thiết lập sẵn cho bạn.
         </p>
       </section>
 
@@ -136,38 +131,25 @@ export default function App() {
             <span className="step-count">02 FILES</span>
           </div>
 
-          <FileDropCard
-            title="Ảnh nguồn"
-            description="Nhân vật, sản phẩm hoặc đối tượng chính"
-            accept="image/png,image/jpeg,image/webp"
-            file={image}
-            onFileChange={setImage}
-            kind="image"
-          />
-          <FileDropCard
-            title="Video tham chiếu"
-            description="Chuyển động, tư thế hoặc hướng camera"
-            accept="video/mp4,video/quicktime,video/webm"
-            file={referenceVideo}
-            onFileChange={setReferenceVideo}
-            kind="video"
-          />
+          <FileDropCard title="Ảnh nguồn" description="Ngoại hình nhân vật và bối cảnh cần giữ lại" accept="image/png,image/jpeg,image/webp" file={image} onFileChange={setImage} kind="image" />
+          <FileDropCard title="Video tham chiếu" description="Hành động và chuyển động cần mô phỏng" accept="video/mp4,video/quicktime,video/webm" file={referenceVideo} onFileChange={setReferenceVideo} kind="video" />
 
           <section className="settings-card">
             <div className="section-heading">
               <div>
-                <h2>Mô tả chuyển động</h2>
-                <p className="muted">Mô tả kết quả bạn muốn tạo.</p>
+                <h2>Thiết lập video</h2>
+                <p className="muted">Hướng dẫn AI đã được thiết lập sẵn.</p>
               </div>
+              <span className="step-count">AUTO PROMPT</span>
             </div>
-            <label className="field-label" htmlFor="prompt">Prompt <span>(không bắt buộc)</span></label>
-            <textarea
-              id="prompt"
-              value={prompt}
-              onChange={(event) => setPrompt(event.target.value)}
-              placeholder="Ví dụ: Nhân vật bước đi tự nhiên, giữ nguyên ngoại hình, camera di chuyển mượt mà..."
-              rows={4}
-            />
+            <div className="preset-prompt" role="note">
+              <span className="preset-prompt__icon" aria-hidden="true">✦</span>
+              <div>
+                <strong>Tự động mô phỏng chuyển động</strong>
+                <p>Ưu tiên giữ nguyên bố cục, góc máy, tỷ lệ khung hình, khoảng cách camera, ánh sáng, màu sắc, phông nền và các chi tiết môi trường của ảnh gốc. Chỉ thay đổi những gì cần thiết để nhân vật thực hiện hành động trong video mẫu.</p>
+              </div>
+              <span className="preset-prompt__status">ĐÃ CÀI ĐẶT</span>
+            </div>
             <div className="settings-row">
               <div className="field-group">
                 <label className="field-label" htmlFor="duration">Thời lượng dự kiến</label>
@@ -187,12 +169,12 @@ export default function App() {
             </div>
             <div className="notice" role="note">
               <span aria-hidden="true">ⓘ</span>
-              <p>Chưa kết nối AI ở baseline này. Thời lượng, tỷ lệ và khả năng dùng video tham chiếu sẽ được đối chiếu với API thực tế trước khi bật tạo video.</p>
+              <p>Chưa kết nối AI ở baseline này. Nút tạo video sẽ được bật sau khi xác minh API hỗ trợ đồng thời ảnh nguồn và video tham chiếu.</p>
             </div>
             <button className="generate-button" type="button" disabled>
               <span aria-hidden="true">✦</span>
               Tạo video AI
-              <span className="button-tag">SẮP RA MẮT</span>
+              <span className="button-tag">CHƯA KẾT NỐI AI</span>
             </button>
           </section>
         </div>
