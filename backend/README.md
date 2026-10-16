@@ -1,37 +1,20 @@
 # Backend — Spring Boot
 
-This folder is a standalone Maven/Spring Boot project and can be imported directly into Spring Tool Suite (STS) or Eclipse IDE.
+Backend Java 21 của AI Video Generator. Backend nhận file, lưu vào ổ đĩa cục bộ, upload file tạm lên Runway Dev, khởi tạo Seedance 2.5 và lưu video kết quả.
 
-## Requirements
+## Cấu hình API key
 
-- JDK 21 installed
-- Spring Tool Suite / Eclipse with the Maven (m2e) integration
-- Internet access on first build so Maven can download dependencies
-
-Check Java and Maven from a terminal:
+Trong PowerShell:
 
 ```powershell
-java -version
-mvn -version
+setx RUNWAYML_API_SECRET "DAN_API_KEY_CUA_BAN_VAO_DAY"
 ```
 
-Both commands should report Java 21. If `mvn` is not recognized, install Apache Maven 3.9+ or configure Maven inside the IDE.
+Thay giá trị mẫu bằng key thật trên máy của bạn, sau đó khởi động lại terminal/IDE. Không đưa key vào mã nguồn, GitHub hoặc biến `VITE_*`.
 
-## Import into Spring Tool Suite
+## Chạy
 
-1. Download or clone the repository from GitHub.
-2. In STS choose **File → Import… → Maven → Existing Maven Projects**.
-3. For **Root Directory**, choose the repository's **backend** folder (the folder that contains `pom.xml`), not the repository root.
-4. Wait for STS to find `pom.xml`, select the project and choose **Finish**.
-5. Right-click the project → **Maven → Update Project…** → enable **Force Update of Snapshots/Releases** only if dependencies do not resolve → **OK**.
-6. Open **Window → Preferences → Java → Installed JREs** and select a JDK 21 installation. Then open **Java → Compiler** and set compliance to 21.
-7. Right-click `AiVideoGeneratorApplication.java` → **Run As → Spring Boot App**. If that menu is absent, choose **Run As → Java Application**.
-
-If you already imported it incorrectly, remove the project from the STS workspace **without deleting files from disk**, then repeat the Maven import and select the `backend` folder.
-
-## Run from PowerShell (alternative)
-
-From the repository root:
+Yêu cầu JDK 21 và Maven 3.9+.
 
 ```powershell
 cd backend
@@ -40,10 +23,16 @@ mvn spring-boot:run
 
 Health check: http://localhost:8080/api/health
 
-## Notes
+## API của ứng dụng
 
-- Java source: `src/main/java`
-- Configuration: `src/main/resources/application.yml`
-- Tests: `src/test/java`
-- Maven build output: `target/` (generated locally)
-- No database is configured or required.
+- `POST /api/generations` — multipart gồm `image`, `referenceVideo`, `duration` (4–30), `aspectRatio` (`9:16`, `16:9`, `1:1`).
+- `GET /api/generations/{id}` — kiểm tra trạng thái.
+- `GET /api/generations/{id}/video` — tải/phát video khi tác vụ thành công.
+
+Mỗi ảnh/video tối đa 200 MB. File được lưu dưới `APP_STORAGE_ROOT` (mặc định `../data`, tương ứng thư mục `data` ở repository root khi chạy từ thư mục backend). Không cần database.
+
+## Kiểm thử
+
+```powershell
+mvn test
+```
