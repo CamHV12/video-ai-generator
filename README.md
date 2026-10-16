@@ -8,11 +8,12 @@ A local-first, single-page AI video generation application.
 - Backend: Java 21, Spring Boot.
 - Storage: local Windows folders; no database.
 - AI: online provider API, to be selected only after verifying image + reference-video support.
-- UI: one main page for source image, reference video, generation settings, progress, and result.
+- UI: one main page for source image, reference video, fixed automatic prompt, generation settings, progress, and result.
+- Prompt: predefined in English; users do not need to write or edit prompts.
 
 ## Repository status
 
-This repository starts with a Phase 0 baseline. AI generation is intentionally not implemented until the selected provider and endpoint are verified.
+This repository starts with a Phase 0 baseline. The UI now has a fixed prompt that directs the model to transfer actions from the reference video while preserving the source image's composition, camera, lighting, colors, background, props, and environmental details. AI generation is intentionally not implemented until the selected provider and endpoint are verified.
 
 ## Prerequisites
 
