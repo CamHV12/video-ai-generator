@@ -1,44 +1,38 @@
 # AI Video Generator
 
-A local-first, single-page AI video generation application.
+Ứng dụng tạo video AI chạy cục bộ trên Windows: chọn **một ảnh nguồn** và **một video tham chiếu**, hệ thống dùng prompt tiếng Anh cố định để giữ ngoại hình/bối cảnh của ảnh và mô phỏng chuyển động của video.
 
-## Confirmed architecture
+## Công nghệ
 
 - Frontend: React, Vite, TypeScript.
 - Backend: Java 21, Spring Boot.
-- Storage: local Windows folders; no database.
-- AI: online provider API, to be selected only after verifying image + reference-video support.
-- UI: one main page for source image, reference video, fixed automatic prompt, generation settings, progress, and result.
-- Prompt: predefined in English; users do not need to write or edit prompts.
+- AI: Runway Dev API — Seedance 2.5.
+- File: lưu cục bộ trong thư mục `data/`; không dùng database.
 
-## Repository status
+## 1. Chuẩn bị
 
-This repository starts with a Phase 0 baseline. The UI now has a fixed prompt that directs the model to transfer actions from the reference video while preserving the source image's composition, camera, lighting, colors, background, props, and environmental details. AI generation is intentionally not implemented until the selected provider and endpoint are verified.
+Cài Node.js LTS, JDK 21 và Maven 3.9+. Tạo API key tại [Runway Dev](https://dev.runway.com/). API generation sẽ tiêu tốn credit; hãy kiểm tra số dư và giá hiển thị trong tài khoản trước khi tạo video.
 
-## Prerequisites
+Trong PowerShell, cấu hình key trên máy của bạn (không gửi key vào chat, không commit key):
 
-- Node.js LTS and npm
-- JDK 21
-- Apache Maven 3.9+
-- Git
-- Internet access for dependency downloads and, later, the AI provider API
+```powershell
+setx RUNWAYML_API_SECRET "DAN_API_KEY_CUA_BAN_VAO_DAY"
+```
 
-## Run on Windows
+Thay chuỗi mẫu bằng API key thật ngay trong PowerShell của bạn. Sau đó đóng và mở lại terminal/IDE để nhận biến môi trường.
 
-### 1. Backend
+## 2. Chạy backend
 
 ```powershell
 cd backend
 mvn spring-boot:run
 ```
 
-The backend health endpoint is `http://localhost:8080/api/health`.
+Health check: http://localhost:8080/api/health
 
-Storage folders are created under `data/` at the repository root by default. Override the root with the `APP_STORAGE_ROOT` environment variable.
+## 3. Chạy frontend
 
-### 2. Frontend
-
-In a second PowerShell window:
+Mở terminal thứ hai:
 
 ```powershell
 cd frontend
@@ -46,32 +40,44 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by Vite (normally `http://localhost:5173`).
+Mở URL Vite hiển thị, thường là http://localhost:5173.
 
-## Local storage layout
+## Luồng tạo video
+
+1. Chọn ảnh JPG/PNG/WebP và video MP4/MOV/WebM.
+2. Chọn thời lượng 5 hoặc 10 giây và tỷ lệ dọc/ngang/vuông.
+3. Bấm **Tạo video AI**. Backend kiểm tra và lưu file vào `data/input/`, upload file tạm lên Runway, gửi yêu cầu Seedance 2.5 và theo dõi trạng thái.
+4. Video hoàn tất được lưu vào `data/output/` và hiển thị trong phần kết quả.
+
+Các file đầu vào được giới hạn 200 MB mỗi file. URI upload tạm của Runway hết hạn sau 24 giờ. Danh sách tác vụ đang chạy được giữ trong bộ nhớ backend; sau khi khởi động lại backend, các tác vụ đang chạy trước đó không còn được tra cứu từ ứng dụng.
+
+## Cấu trúc dữ liệu cục bộ
 
 ```text
 data/
-  input/
-    images/
-    videos/
+  input/images/
+  input/videos/
   output/
   temp/
 ```
 
-The application does not use a database. Do not commit local input/output files or secrets.
+Có thể đổi thư mục gốc bằng biến môi trường `APP_STORAGE_ROOT`. Không commit file cá nhân, video đầu ra hoặc API key.
 
-## Environment variables
+## Kiểm thử
 
-See `.env.example`. Backend secrets must be configured as operating-system environment variables or in a local, untracked configuration. Never expose an AI API key through a `VITE_*` variable.
+```powershell
+cd backend
+mvn test
+```
 
-## Phase plan
+```powershell
+cd frontend
+npm test
+npm run build
+```
 
-1. Phase 0: requirements, repository baseline, environment, and test plan.
-2. Phase 1: single-page UI/UX.
-3. Phase 2: upload and local file validation.
-4. Phase 3: verify AI provider/model and implement provider adapter.
-5. Phase 4: asynchronous task lifecycle and local output storage.
-6. Phase 5: connect UI to real generation.
-7. Phase 6: security, integration tests, and hardening.
-8. Phase 7: local packaging/deployment and acceptance testing.
+## Ghi chú
+
+- Runway là dịch vụ trực tuyến; ảnh và video tham chiếu sẽ được gửi đến Runway để xử lý.
+- Kết quả có thể mất vài phút. Chi phí phụ thuộc thời lượng đầu ra, độ phân giải và thời lượng video tham chiếu.
+- Chưa có database; trạng thái tác vụ chỉ tồn tại trong bộ nhớ backend.
