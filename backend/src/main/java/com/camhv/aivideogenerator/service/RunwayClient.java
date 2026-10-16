@@ -12,7 +12,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,14 +24,12 @@ public class RunwayClient {
     private final String apiKey;
     private final RestClient api;
     private final RestClient externalClient;
-    private final ObjectMapper mapper;
 
     public RunwayClient(
             @Value("${runway.api-key:}") String apiKey,
             RestClient.Builder restClientBuilder,
             ObjectMapper mapper) {
         this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.mapper = mapper;
         this.api = restClientBuilder.clone()
                 .baseUrl(BASE_URL)
                 .defaultHeader("Authorization", "Bearer " + this.apiKey)
@@ -82,7 +79,7 @@ public class RunwayClient {
         Map<String, Object> request = Map.of(
                 "model", "seedance2_5",
                 "promptText", prompt,
-                "references", List.of(Map.of("type", "image", "uri", imageUri)),
+                "references", List.of(Map.of("uri", imageUri)),
                 "referenceVideos", List.of(Map.of("type", "video", "uri", videoUri)),
                 "duration", duration,
                 "ratio", ratio,
