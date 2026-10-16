@@ -130,7 +130,7 @@ public class RunwayClient {
     private void ensureConfigured() {
         if (apiKey.isBlank()) {
             throw new ResponseStatusException(SERVICE_UNAVAILABLE,
-                    "Chưa cấu hình RUNWAY_API_SECRET trên máy chạy backend.");
+                    "Chưa cấu hình RUNWAYML_API_SECRET trên máy chạy backend.");
         }
     }
 }
