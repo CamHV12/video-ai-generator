@@ -1,7 +1,6 @@
 package com.camhv.aivideogenerator.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
@@ -27,8 +26,7 @@ public class RunwayClient {
 
     public RunwayClient(
             @Value("${runway.api-key:}") String apiKey,
-            RestClient.Builder restClientBuilder,
-            ObjectMapper mapper) {
+            RestClient.Builder restClientBuilder) {
         this.apiKey = apiKey == null ? "" : apiKey.trim();
         this.api = restClientBuilder.clone()
                 .baseUrl(BASE_URL)
